@@ -3,6 +3,7 @@
 from bs4 import BeautifulSoup
 import requests
 import json
+import pandas as pd
 
 # wealth爬蟲 回傳內文
 def crawler_wealth(wealth_url):
@@ -12,14 +13,22 @@ def crawler_wealth(wealth_url):
     html.encoding = 'utf-8'
     soup = BeautifulSoup(html.text, 'html.parser')
     #data = soup.find_all('p', {'cms-style':'font-L'}, string=True)
-    data = soup.find('div', {'itemprop':'articleBody'}).find_all('p', string=True)
+    #data = soup.find('div', {'itemprop':'articleBody'}).find_all('p', string=True)
+    data = soup.find('div', {'itemprop':'articleBody'})
     #print(data)
+    if soup.find('div', {'itemprop':'articleBody'}) == None:
+        print('抓不到')
+        return '沒有內文'
+    else:
+        data = soup.find('div', {'itemprop':'articleBody'}).find_all('p', string=True)
+
     if data == None:
-        return '抓不到'
-    #     print('抓不到')
+        print('抓不到')
+        return '沒有內文'
+    
     content = []
     for d in data:
-        content.append(d.string)
+        content.append(d.string.strip().replace('\n', '').replace(' ', ''))
     content = ''.join(content)
     # print(content)
     return content   
@@ -54,9 +63,11 @@ def main():
     file = read_csv(filename)
     for f in file:
         content = crawler_wealth(f[1])
-        clr.append([f[1], content])
+        clr.append([f[0], f[1], content])
         print(f[0], ' 成功')
-    write_csv(clr)
+    #write_csv(clr)
+    df = pd.DataFrame(clr, columns=['id', 'url', 'hyperlink'])
+    df.to_csv('clr_wealth.csv', encoding='utf-8', index=False)
     print('clr_wealth.csv')
 
 main()

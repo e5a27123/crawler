@@ -4,13 +4,15 @@ from bs4 import BeautifulSoup
 import requests
 import json
 import time
+import random
+import pandas as pd
 
 # mops爬蟲 回傳內文
 def crawler_mops(mops_url):
     
     url = mops_url
     html = requests.get(url, headers = {
-    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36'
+    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'
     })
     html.encoding = 'utf-8'
     soup = BeautifulSoup(html.text, 'html.parser')
@@ -71,10 +73,12 @@ def main():
     
     for f in file:
         content = crawler_mops(f[1])
-        clr.append([f[1], content])
+        clr.append([f[0], f[1], content])
         print(f[0], ' 成功')
-        time.sleep(5)
-    write_csv(clr)
+        time.sleep(random.randint(5, 30))
+    #write_csv(clr)
+    df = pd.DataFrame(clr, columns=['id', 'url', 'hyperlink'])
+    df.to_csv('clr_mops.csv', encoding='utf-8', index=False)
     print('clr_mops.csv')
 
 main()
